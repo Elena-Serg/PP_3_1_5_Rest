@@ -6,13 +6,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Id;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.ManyToMany;
-import javax.persistence.FetchType;
 import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
+import javax.persistence.GenerationType;
+import javax.persistence.FetchType;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import javax.validation.constraints.Min;
@@ -20,6 +20,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Email;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "Users")
@@ -28,24 +29,24 @@ public class User implements UserDetails {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "name")
-    @NotEmpty(message = "Name should not be empty")
-    @Size(min = 2, max = 20, message = "Name should be between 2 and 20 characters")
-    private String name;
-    @Column(name = "lastname")
+    @Column(name = "firstname", nullable = false)
+    @NotEmpty(message = "Firstname should not be empty")
+    @Size(min = 2, max = 20, message = "Firstname should be between 2 and 20 characters")
+    private String firstName;
+    @Column(name = "lastname", nullable = false)
     @NotEmpty(message = "Lastname should not be empty")
     @Size(min = 2, max = 20, message = "Lastname should be between 2 and 20 characters")
     private String lastName;
-    @Column(name = "age")
+    @Column(name = "age", nullable = false)
     @Min(value = 0, message = "Age should be equal or greater than 0")
     @Max(value = 100, message = "Age should be equal or less than 100")
     private byte age;
-    @Column(name = "email")
+    @Column(name = "email", unique = true, nullable = false)
     @NotEmpty(message = "Email should not be empty")
     @Email(message = "Email is not valid")
     private String email;
-    @Column(name = "password")
-    @NotEmpty(message = "Password is not be empty")
+    @Column(name = "password", nullable = false)
+    @NotEmpty(message = "Password should not be empty")
     private String password;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
@@ -56,8 +57,8 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String name, String password, String lastName, byte age, String email, List<Role> roles) {
-        this.name = name;
+    public User(String firstName, String password, String lastName, byte age, String email, List<Role> roles) {
+        this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
         this.email = email;
@@ -72,12 +73,12 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String name) {
+        this.firstName = name;
     }
 
     public String getLastName() {
@@ -104,6 +105,7 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -114,6 +116,10 @@ public class User implements UserDetails {
 
     public List<Role> getRoles() {
         return roles;
+    }
+
+    public String getStringOfRoles() {
+        return roles.stream().map(Role::toString).collect(Collectors.joining(" "));
     }
 
     public void setRoles(List<Role> roles) {
@@ -127,7 +133,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return name;
+        return firstName;
     }
 
     @Override

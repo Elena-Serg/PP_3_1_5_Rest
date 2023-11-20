@@ -1,7 +1,7 @@
 package ru.kata.spring.boot_security.demo.dao;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
+import ru.kata.spring.boot_security.demo.exception.UserNotFoundException;
 import ru.kata.spring.boot_security.demo.model.User;
 
 import javax.persistence.EntityManager;
@@ -31,31 +31,41 @@ public class UserDaoImpl implements UserDao {
     @Override
     public void updateUserById(int id, User user) {
         User userById = getUserById(id);
-        userById.setName(user.getName());
+        userById.setFirstName(user.getFirstName());
         userById.setLastName(user.getLastName());
         userById.setAge(user.getAge());
         userById.setEmail(user.getEmail());
         userById.setPassword(user.getPassword());
         userById.setRoles(user.getRoles());
-        entityManager.merge(userById);
     }
 
     @Override
     public User getUserById(int id) {
         User user = entityManager.find(User.class, id);
         if (user == null) {
-            throw new IllegalArgumentException(String.format("User with id=%s not found", id));
+            throw new UserNotFoundException(String.format("User with id=%s not found", id));
         }
         return user;
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        User user = entityManager.createQuery("select u from User u where name = :username", User.class)
-                .setParameter("username", username)
+    public User getUserByFirstName(String firstName) {
+        User user = entityManager.createQuery("select u from User u where firstName = :firstName", User.class)
+                .setParameter("firstName", firstName)
                 .getSingleResult();
         if (user == null) {
-            throw new UsernameNotFoundException(String.format("User '%s' not found", username));
+            throw new UserNotFoundException(String.format("User '%s' not found", firstName));
+        }
+        return user;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        User user = entityManager.createQuery("select u from User u join fetch u.roles where u.email  = :email", User.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        if (user == null) {
+            throw new UserNotFoundException(String.format("User '%s' not found", email));
         }
         return user;
     }
