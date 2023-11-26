@@ -13,8 +13,6 @@ public interface UserService {
 
     void addUser(User user);
 
-    User getUserByFirstName(String firstName);
-
     User getUserByEmail(String email);
 
 }
